@@ -1,0 +1,57 @@
+<div style="padding: 15px; width:500px">
+        <form class="layui-form" action="">
+            <div class="layui-form-item">
+              <label class="layui-form-label">原来密码</label>
+              <div class="layui-input-block">
+                <input type="password" name="old_pwd" required  lay-verify="required" placeholder="输入原来密码" autocomplete="off" class="layui-input">
+              </div>
+            </div> 
+            <div class="layui-form-item">
+                <label class="layui-form-label">新密码</label>
+                <div class="layui-input-block">
+                    <input type="password" name="new_pwd1" required  lay-verify="required" placeholder="输入新密码" autocomplete="off" class="layui-input">
+                </div>
+            </div> 
+            <div class="layui-form-item">
+                <label class="layui-form-label">确认密码</label>
+                <div class="layui-input-block">
+                    <input type="password" name="new_pwd2" required lay-verify="required" placeholder="输入确认密码" autocomplete="off" class="layui-input">
+                </div>
+            </div> 
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-submit lay-filter="formDemo">立即提交</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+            </div>
+          </form>
+    </div>
+    <script>
+            $(function(){
+              layui.use(['form','layer'],function(){
+                  var form=layui.form
+                  var layer=layui.layer  
+    
+    
+    
+                //   监听提交
+                form.on('submit(formDemo)', function(data){
+                   $.post(
+                        "{:url('admin/adminupdatepwd')}",
+                        data.field,
+                        function(res){
+                            // console.log(res)
+                            layer.msg(res.font,{icon:res.code})
+                            if(res.code==1){
+                              location.href="{:url('login/quit')}"
+                            }
+                        }
+                        ,'json'
+                        
+                    )
+                    
+                    return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+                });
+              })
+          })
+        </script>

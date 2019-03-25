@@ -1,0 +1,121 @@
+<div style="padding: 15px;width:800px">
+    <form class="layui-form" action="">
+        <div class="layui-form-item">
+            <label class="layui-form-label">角色名称：</label>
+            <div class="layui-input-block">
+                <input type="text" name="role_name" required  lay-verify="required|checkName" placeholder="请输入角色名称" autocomplete="off" class="layui-input"><!-- lay-verify="required|checkName" -->
+            </div>
+        </div>
+        <div class="layui-form-item" >
+            <label class="layui-form-label">权限节点：</label>
+            <div class="layui-input-block" >
+                {foreach $nodeInfo as $v}
+                <fieldset class="layui-elem-field">
+                    <legend>
+                        <input type="checkbox" title="{$v.node_name}" name="node_id[]" value="{$v.node_id}" lay-skin="primary" lay-filter="allbox">
+                    </legend>
+                    <div class="layui-field-box">
+                        {foreach $v['son'] as $k=>$vv}
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" value="{$vv.node_id}" name="node_id[]" title="{$vv.node_name}" lay-skin="primary" lay-filter="box">
+                        {/foreach}
+                    </div>
+                </fieldset>
+                {/foreach}
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn" lay-submit lay-filter="*">立即提交</button>
+                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+            </div>
+        </div>
+    </form>
+</div>
+<script>
+    $(function(){
+        layui.use(['form','layer'], function(){
+            var form = layui.form;
+            var layer=layui.layer;
+
+            // 验证为一行性
+            form.verify({
+                checkName: function(value,item){ //value：表单的值、item：表单的DOM对象
+                var font;
+                    $.ajax({
+                        url: "{:url('Role/checkName')}",
+                        method:'post',
+                        data:{role_name:value},
+                        async:false,
+                        success:function(result){
+                            if(result=='no'){
+                                font='角色名称已存在'
+                            }
+                        }
+                    });  
+                    return font;
+                }
+            });  
+
+
+
+            form.on('checkbox(allbox)', function(data){
+                var _checked=data.elem.checked;
+                var _this=$(data.othis);
+                _son=_this.parent().next().find('input');
+                if(_checked==true){
+                    _son.prop("checked",true)
+                }else{
+                    _son.prop("checked",false)
+                }
+                form.render();
+            });
+            form.on('checkbox(box)', function(data){
+                var _checked=data.elem.checked;
+                var _this=$(data.othis);
+                if(_checked==true){
+                    _this.parent().prev().find("input").prop("checked",true)
+                }else{
+                    var num=0;
+                    var all=_this.siblings('input');
+                    all.each(function(index){
+                        if($(this).prop("checked")==false){
+                            num+=1
+                        }
+                        if(num==all.length){
+                            _this.parent().prev().find("input").prop("checked",false)
+                        }
+                    })
+                }
+                form.render();
+            });
+
+
+
+            form.on("submit(*)",function(data){
+                $.post(
+                    "{:url('Role/roleAdd')}",
+                    data.field,
+                    function(res){
+                        // console.log(res);
+                        layer.msg(res.font,{icon:res.code})
+                        if(res.code==1){
+                            layer.open({
+                                type:1,
+                                content:'是否跳转到展示页面',
+                                btn:['进入','继续添加'],
+                                yes:function(index,layero){
+                                    location.href="{:url('Role/roleList')}"
+                                },
+                                btn2:function (index,layer){
+                                    location.href="{:url('Role/roleAdd')}"
+                                }
+                            })
+                        }
+                    }
+                    ,'json'
+                )
+                return false;
+            });
+        })
+    })
+</script>

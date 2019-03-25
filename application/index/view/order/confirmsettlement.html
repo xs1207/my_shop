@@ -1,0 +1,201 @@
+<script type="text/javascript" src="__STATIC__/index/js/n_nav.js"></script>   
+{include file='public/top'}
+<!--End Menu End--> 
+<div class="i_bg">  
+    <div class="content mar_20">
+    	<img src="__STATIC__/index/images/img2.jpg" />        
+    </div>
+    
+    <!--Begin 第二步：确认订单信息 Begin -->
+    <div class="content mar_20">
+    	<div class="two_bg">
+        	<div class="two_t">
+            	<span class="fr"><a href="#">修改</a></span>商品列表
+            </div>
+            <table border="0" class="car_tab" style="width:1110px;" cellspacing="0" cellpadding="0">
+              <tr>
+                <td class="car_th" width="550">商品名称</td>
+                <td class="car_th" width="140">单价</td>
+                <td class="car_th" width="150">购买数量</td>
+                <td class="car_th" width="130">小计</td>
+                <td class="car_th" width="140">返还积分</td>
+              </tr>
+              {volist name="cartInfo" id="v"}
+                <tr>
+                  <td>
+                      <div class="c_s_img"><img src="__ROOT__/goods_img/{$v.goods_img}" width="73" height="73" /></div>
+                      {$v.goods_name}
+                  </td>
+                  <td align="center">{$v.self_price}</td>
+                  <td align="center">{$v.buy_number}</td>
+                  <td align="center" style="color:#ff4e00;" class="subtotal">￥{$v.buy_number*$v.self_price}</td>
+                  <td align="center" class="score">{$v.buy_number*$v.self_price}R</td>
+                </tr>
+              {/volist}
+              <tr>
+                <td colspan="5" align="right" style="font-family:'Microsoft YaHei';" id="manytotal">
+                    商品总价：￥1899.00 ； 返还积分 56R  
+                </td>
+              </tr>
+            </table>
+            
+            <div class="two_t">
+            	<span class="fr"><a href="#">修改</a></span>收货人信息
+            </div>
+            <div style="overflow: auto;height: 200px">
+              {volist name="addressInfo" id="v"}
+              <table border="0" class="peo_tab" style="width:1110px;" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td rowspan="2">
+                      {if condition="$v['is_default'] eq 1"}
+                        <input type="radio" value="{$v.address_id}" checked name="address_id">
+                      {else/}
+                        <input type="radio" value="{$v.address_id}" name="address_id">
+                      {/if}
+                  </td>
+                  <td class="p_td" width="160">收货人名称</td>
+                  <td width="395">{$v.address_name}</td>
+                  <td class="p_td" width="160">收货人电话</td>
+                  <td width="395">{$v.address_tel}</td>
+                </tr>
+                <tr>
+                  <td class="p_td">省/市/区</td>
+                  <td>{$v.province_name}.{$v.city_name}.{$v.county_name}</td>
+                  <td class="p_td">详细地址</td>
+                  <td>{$v.address_detailed}</td>
+                </tr>
+              </table>
+              {/volist}
+            </div>
+            
+            <div class="two_t">
+            	支付方式
+            </div>
+            <ul class="pay">
+                <li class="checked">支付宝<div class="ch_img"></div></li>
+                <li>转账<div class="ch_img"></div></li>
+                <li>货到付款<div class="ch_img"></div></li>
+            </ul>
+          
+            
+            <div class="two_t">
+            	其他信息
+            </div>
+            <table border="0" class="car_tab" style="width:1110px;" cellspacing="0" cellpadding="0">
+              
+                <tr valign="top">
+                    <td align="right" style="padding-right:0;"><b style="font-size:14px;">订单附言：</b></td>
+                    <td style="padding-left:0;"><textarea class="add_txt" style="width:860px; height:50px;"></textarea></td>
+                </tr>
+
+            </table>
+
+
+            
+            <table border="0" style="width:900px; margin-top:20px;" cellspacing="0" cellpadding="0">
+                <tr>
+                    <td>
+                        <input type="checkbox"  value="">是否使用积分</br>
+                        请输入你要使用的积分 :
+                        <input type="text" id="a"> <input type="button" id="rate" value="使用">
+                    </td>
+
+                </tr>
+
+            <tr>
+                <td align="right">
+                	该订单完成后，您将获得 <font color="#ff4e00" id="score">0</font> 积分<br />
+                    商品总价: <font color="#ff4e00" id="total">￥0</font>
+                </td>
+            </tr>
+              <tr height="70">
+                <td align="right">
+                	<b style="font-size:14px;">应付款金额：<span style="font-size:22px; color:#ff4e00;" id="pay_price">￥2899</span></b>
+                </td>
+              </tr>
+              <tr height="70">
+                <td align="right">
+                  <a href="javascript:;" id="confirmOrder">
+                    <img src="__STATIC__/index/images/btn_sure.gif" />
+                  </a>
+                </td>
+              </tr>
+            </table>
+
+            
+        	
+        </div>
+    </div>
+  <!--End 第二步：确认订单信息 End-->
+    <script>
+      $(function(){
+        layui.use(['layer'],function(){
+          var layer=layui.layer
+          //获取总价  积分
+          var total=0
+          var score=0
+          $(".subtotal").each(function(index){
+            total+=parseInt($(this).text().substr(1))
+          });
+          $(".score").each(function(index){
+            score+=parseInt($(this).text().substr(0,$(this).text().length-1));
+          });
+          // console.log(score)
+          $("#total").text("￥"+total);
+          $("#score").text(score);
+          $("#manytotal").text("商品总价：￥"+total+" ； 返还积分 "+score+"R")
+          $("#pay_price").text("￥"+total)
+
+            // $("#a").blur(function(){
+            //     var _this=$(this);
+            //     var a_number=_this.val();
+            //     console.log(a_number);
+            // })
+
+            $("#rate").click(function () {
+                var _this=$(this);
+                var a=_this.prev("input").val();
+                var total1=total-a/10
+                // console.log(total1);
+                $("#pay_price").text("￥"+total1)
+                $("#total").text("￥"+total1);
+                $("#score").text(total1);
+            })
+
+          //切换支付方式
+          $(".pay").children("li").click(function(){
+            var _this=$(this);
+            _this.siblings("li").removeClass("checked");//拿到所有的兄弟节点 清除样式
+            _this.addClass("checked");//给自己加样式
+          });
+
+          
+          //确认订单
+          //点击确认订单 那到所有信息
+          $("#confirmOrder").click(function(){
+            var cid="{:input('get.cid')}";// 拿到购物车的id
+            var _radio=$(":radio");//拿收货地址信息id ： 类位radio的框  循环  自定义 默认选中的收货地址id
+            var address_id;
+            _radio.each(function(index){
+              if($(this).prop("checked")==true){
+                address_id=$(this).val(); 
+              }
+            })
+            var pay_type=$(".pay").children("li[class='checked']").index()+1;
+            var order_message=$('.add_txt').val();
+            $.post(
+              "{:url('order/confirmorder')}",
+              {cid:cid,address_id:address_id,pay_type:pay_type,order_message:order_message},
+              function(result){
+                // console.log(result);
+                layer.msg(result.font,{icon:result.code});
+                if(result.code==1){
+                  location.href="{:url('order/ordersuccess')}?order_id="+result.order_id
+                }
+              }
+              ,'json'
+            )
+          })
+        })
+      })
+    </script>

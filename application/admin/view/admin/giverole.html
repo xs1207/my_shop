@@ -1,0 +1,47 @@
+<div style="padding: 15px; width:800px">
+    <form class="layui-form" action="">
+      <input type="hidden" name="admin_id" value="{$admin_id}">
+        <div class="layui-form-item">
+            <label class="layui-form-label">可选角色</label>
+            <div class="layui-input-block">
+                {volist name="roleInfo" id="v"}
+                {in name="$v['role_id']" value="$selectRoleId"}
+                <input type="checkbox" value="{$v.role_id}" checked name="role_id[]" title="{$v.role_name}" lay-skin="primary">
+                {else/}
+                <input type="checkbox" value="{$v.role_id}" name="role_id[]" title="{$v.role_name}" lay-skin="primary">
+                {/in}
+                {/volist}
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn" lay-submit lay-filter="*">立即提交</button>
+                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+            </div>
+        </div>
+      </form>
+</div>
+<script>
+    $(function(){
+        layui.use(['form','layer'],function(){
+            var form=layui.form
+            var layer=layui.layer
+
+            form.on("submit(*)",function(data){
+                // console.log(11)
+                $.post(
+                    "{:url('Admin/giveRole')}",
+                    data.field,
+                    function(result){
+                        layer.msg(result.font,{icon:result.code});
+                        if(result.code==1){
+                            location.href="{:url('Admin/adminList')}"
+                        }
+                    }
+                    ,"json"
+                );
+                return false;
+            })
+        })
+    })
+</script>

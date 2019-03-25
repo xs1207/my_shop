@@ -1,0 +1,109 @@
+<div style="padding: 15px; width:500px">
+        <form class="layui-form" action="">
+            <input type="hidden" name="brand_id" id="brand_id" value="{$data.brand_id}">
+            <div class="layui-form-item">
+                <label class="layui-form-label">品牌名称</label>
+                <div class="layui-input-block">
+                    <input type="text" name="brand_name" required  lay-verifys="required|checkName" placeholder="请输入名称" autocomplete="off" class="layui-input" value="{$data.brand_name}">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                    <label class="layui-form-label">品牌网址</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="brand_url" required  lay-verifys="required|url" placeholder="请输入网址" autocomplete="off" class="layui-input" value="{$data.brand_url}">
+                    </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">logo</label>
+                <div class="layui-input-block">
+                    <input type="hidden" name="brand_logo" id="brand_logo">
+                    <button type="button" class="layui-btn" id="logo">
+                        <i class="layui-icon">&#xe67c;</i>上传图片
+                    </button>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">是否展示</label>
+                <div class="layui-input-block">
+                    <input type="radio" name="brand_show" value="1" title="是" <?php if($data['brand_show']==1){echo "checked";}?>>
+                    <input type="radio" name="brand_show" value="2" title="否" <?php if($data['brand_show']==2){echo "checked";}?>>
+                </div>
+            </div>
+            <div class="layui-form-item layui-form-text">
+                <label class="layui-form-label">品牌描述</label>
+                <div class="layui-input-block">
+                    <textarea name="brand_describe" placeholder="请输入内容" class="layui-textarea" lay-verifys="required" >{$data.brand_describe}</textarea>
+            </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-submit lay-filter="formDemo">立即修改</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
+       
+      <script>
+          $(function(){
+              layui.use(['form','layer','upload'],function(){
+                  var form=layui.form
+                  var layer=layui.layer
+                  var upload=layui.upload
+                
+                // 验证唯一性
+                form.verify({
+                        checkName: function(value,item){ //value：表单的值、item：表单的DOM对象
+                            var font;
+                                $.ajax({
+                                    url: "{:url('brand/checkname')}",
+                                    method:'post',
+                                    data:{brand_name:value},
+                                    async:false,
+                                    success:function(result){
+                                        if(result=='no'){
+                                            font='品牌名称已存在'
+                                        }
+                                    }
+                                });  
+                                return font;
+                            }
+                    });      
+    
+    
+    
+                //文件上传
+                var uploadInst = upload.render({
+                    elem: '#logo' //绑定元素
+                    ,url: "{:url('Brand/brandlogo')}" //上传接口
+                    ,exts:'jpg|jpeg|png|gif'
+                    ,size:2048
+                    ,done: function(res){
+                        layer.msg(res.font,{icon:res.code});
+                        if(res.code==1){
+                            $("#brand_logo").val(res.src);
+                        }
+                    }
+                    
+                });
+    
+                //   监听提交
+                form.on('submit(formDemo)', function(data){
+                   $.post(
+                        "{:url('brand/brandupdate')}",
+                        data.field,
+                        function(res){
+                            // console.log(res)
+                            layer.msg(res.font,{icon:res.code})
+                            if(res.code==1){
+                                location.href="{:url('brand/brandlist')}"
+                            }
+                        },
+                        'json'
+                    )
+                    
+                    return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+                });
+              })
+          })
+      </script>

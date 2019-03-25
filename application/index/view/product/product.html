@@ -1,0 +1,27 @@
+<div class="list_c">
+            	
+    <ul class="cate_list">
+        {volist name="goodsInfo" id="v"}
+            <li>
+                <div class="img">
+                    <a href="{:url('product/productdetail')}?goods_id={$v.goods_id}">
+                        <img src="__ROOT__/goods_img/{$v.goods_img}" width="210" height="185" />
+                    </a>
+                </div>
+                <div class="price">
+                    <font>￥<span>{$v.self_price}</span></font> &nbsp; {$v.goods_score}R
+                </div>
+                <div class="name"><a href="{:url('product/productdetail')}?goods_id={$v.goods_id}">{$v.goods_name}</a>&nbsp;&nbsp;&nbsp;月销量<a href="#" style="font-size:12px;color:#ff4e00">{$v.sell_num}</a>&nbsp;</div>
+                <div class="carbg">
+                    <a href="#" class="ss">收藏</a>
+                    <a href="#" class="j_car">加入购物车</a>
+                </div>
+            </li>
+        {/volist}
+    </ul>
+    
+    <div class="pages">
+        {$page_str}
+    </div>    
+    
+</div>

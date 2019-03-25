@@ -1,0 +1,119 @@
+<!--Begin 退款中心 Begin -->
+{include file="public/user_top" /}
+<div class="m_content">
+    <!--End Header End-->
+    <div class="m_content">
+        <div class="content mar_20">
+
+            <table border="0" class="car_tab" style="width:1200px; margin-bottom:50px;" cellspacing="0" cellpadding="0">
+                <tr>
+                    <td class="car_th"></td>
+                    <td class="car_th" width="350">商品名称</td>
+                    <td class="car_th" width="140">单价</td>
+                    <td class="car_th" width="150">购买数量</td>
+                    <td class="car_th" width="130">小计</td>
+                    <td class="car_th" width="150">操作</td>
+                </tr>
+                {volist name="orderInfoData" id="v"}
+                <tr goods_id="{$v['goods_id']}" order_id="{$v['order_id']}">
+                    <td>
+                        <input type="checkbox" class="_box" value="{$v.self_price*$v.buy_number}">
+                    </td>
+                    <td>
+                        <div class="c_s_img"><img src="__ROOT__/goods_img/{$v.goods_img}" width="73" height="73" /></div>
+                        {$v.goods_name}
+                    </td>
+                    <td align="center">￥{$v.self_price}</td>
+                    <td align="center">{$v.buy_number}</td>
+                    <td align="center">￥{$v.self_price*$v.buy_number}</b></td>
+                    <td align="center">
+                        {if condition="$v['goods_status'] eq 2"}
+                        已退款
+                        {else/}
+                        <a href="javascript:;" class="refund">退款</a>
+                        {/if}
+                    </td>
+                </tr>
+                {/volist}
+                <tr height="70">
+                    <td colspan="6" tyle="font-family:'Microsoft YaHei'; border-bottom:0;">
+                        <label class="r_rad">
+                            <input type="checkbox" id="allbox" />
+                        </label>
+                        <label class="r_txt">全选/全不选</label>
+                    </td>
+                </tr>
+                <tr valign="top" height="150">
+                    <td colspan="6" align="right">
+                        <button id=btn>全部退款</button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+<script>
+    $(function(){
+        layui.use(['layer'],function(){
+            var layer=layui.layer;
+            //全选点击事件
+            $("#allbox").click(function(){
+                var _this=$(this);
+                var _check=_this.prop('checked')
+                var _checkbox=$("._box");
+                _checkbox.each(function(){
+                    $(this).prop("checked",_check)
+                })
+            })
+            //点击单件退款
+            $(".refund").click(function(){
+                var _this=$(this);
+                // console.log(11)
+                // 获取order_id
+                var order_id=_this.parents('tr').attr('order_id')
+                // 获取商品id
+                var goods_id=_this.parents('tr').attr('goods_id')
+                // console.log(order_id)
+                // console.log(goods_id)
+                $.post(
+                    "{:url('UserOrder/orderRefund')}",
+                    {goods_id:goods_id,order_id:order_id},
+                    function(result){
+                        layer.msg("result.font,{icon:result.code}");
+                        if(res.code==1){
+                            lacation.href="{:url('userorder/orderList')}"
+                        }
+                    }
+                    ,'json'
+                )
+            })
+
+            //批量退款
+            $('#btn').click(function () {
+                var _checkbox=$('._box')
+                var order_id=_checkbox.parents('tr').attr('order_id');
+                var str=''
+                _checkbox.each(function (){
+                    if($(this).prop('checked')==true){
+                        str+=','+$(this).parents('tr').attr('goods_id')
+                    }
+                })
+                // console.log(order_id)
+                
+                str=str.substr(1)
+                // console.log(str)
+                $.post(
+                    "{:url('UserOrder/orderrefund')}",
+                    {order_id:order_id,goods_id:str},
+                    function (result) {
+                        layer.msg(result.font,{icon:result.code})
+                        if(result.code==1){
+                            location.href="{:url('userorder/orderList')}"
+                        }
+                    }
+                    ,'json'
+                )
+            })
+        })
+    })
+</script>

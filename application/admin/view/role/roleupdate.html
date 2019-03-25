@@ -1,0 +1,96 @@
+<div style="padding: 15px;width:800px">
+    <form class="layui-form" action="">
+        <input type="hidden" name="role_id" value="{$roleInfo.role_id}">
+        <div class="layui-form-item">
+            <label class="layui-form-label">角色名称：</label>
+            <div class="layui-input-block">
+                <input type="text" name="role_name" required value="{$roleInfo.role_name}"  placeholder="请输入角色名称" autocomplete="off" class="layui-input"><!-- lay-verify="required|checkName" -->
+            </div>
+        </div>
+        <div class="layui-form-item" >
+            <label class="layui-form-label">权限节点：</label>
+            <div class="layui-input-block" >
+                {foreach $nodeInfo as $v}
+                <fieldset class="layui-elem-field">
+                    <legend>
+                        {in name="$v['node_id']" value="$selectNodeId"}
+                            <input type="checkbox" title="{$v.node_name}" checked name="node_id[]" value="{$v.node_id}" lay-skin="primary" lay-filter="allbox">
+                        {else/}
+                            <input type="checkbox" title="{$v.node_name}" name="node_id[]" value="{$v.node_id}" lay-skin="primary" lay-filter="allbox">
+                        {/in}
+                    </legend>
+                    <div class="layui-field-box">
+                        {foreach $v['son'] as $k=>$vv}
+                        {in name="$v['node_id']" value="$selectNodeId"}
+                        &nbsp;  &nbsp;<input type="checkbox" value="{$vv.node_id}" checked name="node_id[]" title="{$vv.node_name}" lay-skin="primary" lay-filter="box">
+                        {else/}
+                            &nbsp;<input type="checkbox" value="{$vv.node_id}" name="node_id[]" title="{$vv.node_name}" lay-skin="primary" lay-filter="box">
+                        {/in}
+                        {/foreach}
+                    </div>
+                </fieldset>
+                {/foreach}
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn" lay-submit lay-filter="*">立即修改</button>
+                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+            </div>
+        </div>
+    </form>
+</div>
+<script>
+    $(function(){
+        layui.use(['form','layer'], function(){
+            var form = layui.form;
+            var layer=layui.layer;
+            form.on('checkbox(allbox)', function(data){
+                var _checked=data.elem.checked;
+                var _this=$(data.othis);
+                _son=_this.parent().next().find('input');
+                if(_checked==true){
+                    _son.prop("checked",true)
+                }else{
+                    _son.prop("checked",false)
+                }
+                form.render();
+            });
+            form.on('checkbox(box)', function(data){
+                var _checked=data.elem.checked;
+                var _this=$(data.othis);
+                if(_checked==true){
+                    _this.parent().prev().find("input").prop("checked",true)
+                }else{
+                    var num=0;
+                    var all=_this.siblings('input');
+                    all.each(function(index){
+                        if($(this).prop("checked")==false){
+                            num+=1
+                        }
+                        if(num==all.length){
+                            _this.parent().prev().find("input").prop("checked",false)
+                        }
+                    })
+                }
+                form.render();
+            });
+            //提交事件
+            form.on("submit(*)",function(data){
+                $.post(
+                    "{:url('Role/roleUpdate')}",
+                    data.field,
+                    function(res){
+                        // console.log(res);
+                        layer.msg(res.font,{icon:res.code})
+                        if(res.code==1){
+                            location.href="{:url('Role/roleList')}"
+                        }
+                    }
+                    ,'json'
+                )
+                return false;
+            });
+        })
+    })
+</script>

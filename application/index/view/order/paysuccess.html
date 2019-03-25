@@ -1,0 +1,32 @@
+<script type="text/javascript" src="__STATIC__/index/js/n_nav.js"></script>   
+{include file="public/top"}
+<!--End Menu End--> 
+<div class="i_bg">  
+    <!--Begin 第三步：提交订单 Begin -->
+    <div class="content mar_20">
+    	
+        <!--Begin 银行卡支付 Begin -->
+    	<div class="warning">        	
+            <table border="0" style="width:1000px; text-align:center;" cellspacing="0" cellpadding="0">
+              <tr height="35">
+                <td style="font-size:18px;">
+                	感谢您在本店购物！您已支付成功，请记住您的订单号: <font color="#ff4e00">{$orderInfo.order_number}</font>
+                    你的支付总金额为<font color="#ff4e00">￥{$orderInfo.order_amount}</font>,
+                    欢迎再次购买!
+                </td>
+              </tr>
+              <tr>
+                <td>
+                    <a href="{:url('index/index')}">首页</a> &nbsp; &nbsp; <a href="{:url('user/index')}">用户中心</a>                    
+                </td>
+              </tr>
+            </table>        	
+        </div>
+        <!--Begin 银行卡支付 Begin -->
+        
+
+        
+    </div>
+	<!--End 第三步：提交订单 End--> 
+    
+    

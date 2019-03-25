@@ -1,0 +1,80 @@
+<div style="padding: 15px; width:500px">
+        <form class="layui-form" action="">
+            <div class="layui-form-item">
+              <label class="layui-form-label">友链名称</label>
+              <div class="layui-input-block">
+                <input type="text" name="name" required  lay-verifys="required|checkName" placeholder="输入友链名称" autocomplete="off" class="layui-input">
+              </div>
+            </div> 
+            <div class="layui-form-item">
+                <label class="layui-form-label">友链名称</label>
+                <div class="layui-input-block">
+                    <input type="text" name="url" required  lay-verifys="required|url" placeholder="输入友链地址" autocomplete="off" class="layui-input">
+                </div>
+            </div> 
+            <div class="layui-form-item">
+              <div class="layui-input-block">
+                <button class="layui-btn" lay-submit lay-filter="formDemo">立即提交</button>
+                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+              </div>
+            </div>
+          </form>
+    </div>
+    <script>
+            $(function(){
+              layui.use(['form','layer'],function(){
+                  var form=layui.form
+                  var layer=layui.layer
+    
+                    // 验证为一行性
+                    form.verify({
+                    checkName: function(value,item){ //value：表单的值、item：表单的DOM对象
+                    var font;
+                        $.ajax({
+                            url: "{:url('links/checkname')}",
+                            method:'post',
+                            data:{name:value},
+                            async:false,
+                            success:function(result){
+                                if(result=='no'){
+                                    font='品牌名称已存在'
+                                }
+                            }
+                        });  
+                        return font;
+                    }
+                    });  
+    
+    
+    
+                //   监听提交
+                form.on('submit(formDemo)', function(data){
+                   $.post(
+                        "{:url('links/linksadd')}",
+                        data.field,
+                        function(res){
+                            // console.log(res)
+                            layer.msg(res.font,{icon:res.code})
+                            if(res.code==1){
+                                layer.open({
+                                    type:1,
+                                    content:'是否跳转到展示页面',
+                                    btn:['进入','继续添加'],
+                                    yes:function(index,layero){
+                                        location.href="{:url('links/linkslist')}"
+                                    },
+                                    btn2:function (index,layer){
+                                        location.href="{:url('links/linksadd')}"
+                                    }
+                                })
+                            }
+                        },
+                        'json'
+                    )
+                    
+                    return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+                });
+              })
+          })
+        </script>
+        

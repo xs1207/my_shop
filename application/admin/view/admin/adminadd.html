@@ -1,0 +1,99 @@
+<div style="padding: 15px; width:500px">
+    <form class="layui-form" action="">
+        <div class="layui-form-item">
+            <label class="layui-form-label">管理员名称</label>
+            <div class="layui-input-block">
+                <input type="text" name="admin_name" required placeholder="请输入管理员名称" lay-verifys="required|checkName" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">管理员密码</label>
+            <div class="layui-input-inline">
+                <input type="password" name="admin_pwd" required placeholder="请输入密码" lay-verifys="required|checkPwd" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">管理员邮箱</label>
+            <div class="layui-input-block">
+                <input type="text" name="admin_email" required placeholder="请输入邮箱" lay-verifys="required|checkEmail" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">管理员电话</label>
+            <div class="layui-input-block">
+                <input type="text" name="admin_tel" required placeholder="请输入电话" lay-verifys="required|phone|number" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn" lay-submit lay-filter="*">立即提交</button>
+                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+            </div>
+        </div>
+    </form>
+</div>
+    <script>
+        $(function(){
+            layui.use(['form','layer'],function(){
+                form=layui.form;
+                layer=layui.layer;
+                // 验证
+                form.verify({
+                    checkName: function(value,item){ //value：表单的值、item：表单的DOM对象
+                        var reg=/^[a-z]\w{3,11}$/i;
+                        var font;
+                        if(!reg.test(value)){
+                            return "账号由数字、字母、下划线组成，不能数字开头，4-12位"
+                        }else{
+                            $.ajax({
+                                url: "{:url('admin/checkname')}",
+                                method:'post',
+                                data:{admin_name:value},
+                                async:false,
+                                success:function(result){
+                                    if(result=='no'){
+                                        font='账号已存在'
+                                    }
+                                }
+                            });  
+                            return font;
+                        }
+                    },
+                    checkPwd:function(value,item){
+                        var reg=/^.{6,16}$/;
+                        if(!reg.test(value)){
+                            return "密码必须在6-16位之间";
+                        }
+                    }
+                });      
+
+                // 提交数据
+                form.on('submit(*)', function(data){
+                    $.post(
+                        "{:url('admin/adminadd')}",
+                        data.field,
+                        function(result){
+                            // console.log(result)
+                            layer.msg(result.font, {icon:result.code});
+                            if(result.code==1){
+                                layer.open({
+                                    type:1,
+                                    content:'是否跳转到展示页面',
+                                    btn:['进入','继续添加'],
+                                    yes:function(index,layero){
+                                        location.href="{:url('admin/adminlist')}";
+                                    },
+                                    btn2:function(index,layero){
+                                        location.href="{:url('admin/adminadd')}";
+                                    }
+                                })
+                            }
+                        },
+                        'json'
+                    );
+                    return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+                });
+            });
+        })
+    </script>
+  

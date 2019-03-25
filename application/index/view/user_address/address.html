@@ -1,0 +1,187 @@
+
+{include file="public/user_top"}
+<!--End Header End--> 
+<div class="i_bg bg_color">
+    <!--Begin 用户中心 Begin -->
+	<div class="m_content">
+        {include file="public/user_left"}
+		<div class="m_right">
+            <p></p>
+            <div class="mem_tit">收货地址列表</div>
+            {volist name="address" id="v"}
+                {if condition="$v['is_default'] eq 1"}
+                    {assign name="bcolor" value="border-color:red"}
+                {else/}
+                    {assign name="bcolor" value=""}
+                {/if}
+                <div class="address" style="{$bcolor}">
+                    <div class="a_close">
+                        <a href="javascript:;" class="del" address_id="{$v.address_id}"><img src="__STATIC__/index/images/a_close.png" /></a>
+                    </div>
+                    <table border="0" class="add_t" align="center" style="width:98%; margin:10px auto;" cellspacing="0" cellpadding="0">
+                    <tr>
+                        <td align="right" width="80">收货人姓名：</td>
+                        <td>{$v.address_name}</td>
+                    </tr>
+                    <tr>
+                        <td align="right">配送区域：</td>
+                        <td>{$v.address}</td>
+                    </tr>
+                    <tr>
+                        <td align="right">详细地址：</td>
+                        <td>{$v.address_detailed}</td>
+                    </tr>
+                    <tr>
+                        <td align="right">手机：</td>
+                        <td>{$v.address_tel}</td>
+                    </tr>
+                    <tr>
+                        <td align="right">最佳配送时间</td>
+                        <td>{$v.send_time}</td>
+                    </tr>
+                    </table>
+                    <p align="right">
+                        <a href="javascript:;" class="asd" asd_id="{$v.address_id}" style="color:#ff4e00;">设为默认</a>
+                        <a href="{:url('userAddress/addressUpdate')}?id={$v.address_id}" style="color:#ff4e00;">编辑</a>
+                    </p>
+
+                </div>
+            {/volist}
+            <div class="mem_tit">增加新的收货地址</div>
+            <form action="">
+                <table border="0" class="add_tab" style="width:930px;"  cellspacing="0" cellpadding="0">
+                <tr>
+                    <td width="135" align="right">配送地区</td>
+                    <td colspan="3" style="font-family:'宋体';">
+                        <select name="address_province" class="area" id="address_province">
+                            <option value="0">请选择...</option>
+                            {volist name="province" id="v"}
+                                <option value="{$v.id}">{$v.name}</option>
+                            {/volist}
+                        </select>
+                        <select  name="address_city" class="area" id="address_city">
+                            <option value="0">请选择...</option>
+                        </select>
+                        <select  name="address_county" class="area" id="address_county">
+                            <option value="0">请选择...</option>
+                        </select>
+                        （必填）
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right">收货人姓名</td>
+                    <td style="font-family:'宋体';"><input type="text" name="address_name" id="address_name" placeholder="姓名" class="add_ipt" />（必填）</td>
+                    <td align="right">详细地址</td>
+                    <td style="font-family:'宋体';"><input type="text" name="address_detailed" id="address_detailed" placeholder="详细地址" class="add_ipt" />（必填）</td>
+                </tr>
+                <tr>
+                    <td align="right">手机</td>
+                    <td style="font-family:'宋体';"><input type="text" name="address_tel" id="address_tel" placeholder="手机号" class="add_ipt" />（必填）</td>
+                    <td align="right">最佳送货时间</td>
+                    <td style="font-family:'宋体';"><input type="text" name="send_time" id="send_time" placeholder="最佳送货时间" class="add_ipt" /></td>
+                </tr>
+                <tr>
+                    <td colspan="4">
+                        <input type="checkbox"  id="is_default">是否设置为默认收货地址
+                    </td>
+                </tr>	
+                <p align="right">
+                    <a href="#" class="add_b" id="add">添加</a>
+                </p>
+                </table>
+            </form>
+            
+                       
+        </div>
+    </div>
+    <script>
+        $(function(){
+            layui.use(['form','layer'],function(){
+                var form=layui.form;
+                var layer=layui.layer;
+                //三级联动
+                $(".area").change(function(){
+                    var _this=$(this);
+                    _this.nextAll().html("<option value='0'>请选择...</option>");
+                    var id=_this.val();
+                    $.post(
+                        "{:url('userAddress/getArea')}",
+                        {id:id},
+                        function(result){
+                            var _option="<option value='0'>请选择...</option>"
+                            for(var i in result){
+                                _option+="<option value='"+result[i]['id']+"'>"+result[i]['name']+"</option>"
+                            }
+                            _this.next('select').html(_option);
+                        }
+                        ,'json'
+                    )
+                })
+            
+                // 提交
+                $("#add").click(function(){
+                    var address_province=$("#address_province").val();
+                    var address_city=$("#address_city").val();
+                    var address_county=$("#address_county").val();
+                    var address_name=$("#address_name").val();
+                    var address_detailed=$("#address_detailed").val();
+                    var address_tel=$("#address_tel").val();
+                    var send_time=$("#send_time").val();
+                    var is_default=$("#is_default").prop("checked");
+                    if(is_default==true){
+                        is_default=1;
+                    }else{
+                        is_default=2;
+                    }
+                    $.post(
+                        "{:url('UserAddress/address')}",
+                        {address_province:address_province,address_city:address_city,address_county:address_county,address_name:address_name,address_detailed:address_detailed,address_tel:address_tel,send_time:send_time,is_default:is_default},
+                        function(result){
+                          layer.msg(result.font,{icon:result.code});
+                            if(result.code==1){
+                                location.href="{:url('UserAddress/address')}" 
+                                //  console.log(result);
+                            }
+                           
+                        },
+                        'json'
+                    )
+                })
+            
+                //删除
+                $(".del").click(function(){
+                    var _this=$(this);
+                    var id=_this.attr('address_id');
+                    $.post(
+                        "{:url('UserAddress/addressDel')}",
+                        {id:id},
+                        function(result){
+                          layer.msg(result.font,{icon:result.code});
+                          if(result.code==1){
+                              _this.parents("div[class='address']").remove();
+                          }
+                        }
+                        ,'json'
+                    )
+                })
+            
+                //设为默认
+                $(".asd").click(function(){
+                    var _this=$(this);
+                    var id=_this.attr("asd_id");
+                    console.log(id)
+                    $.post(
+                        "{:url('UserAddress/addressDefault')}",
+                        {id:id},
+                        function(result){
+                            layer.msg(result.font,{icon:result.code});
+                            if(result.code==1){
+                                location.href="{url('UserAddress/address')}"
+                            }
+                        }
+                        ,'json'
+                    )
+                })
+            })
+        })
+    </script>

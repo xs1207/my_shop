@@ -1,0 +1,104 @@
+<div style="padding: 15px">
+
+    <input type="text" id="goods_name" placeholder="商品名称">
+    分类 <select id="cate_name">
+            <option value="">--请选择--</option>
+            {foreach $cateInfo as $v}
+                <option value="{$v.cate_name}">{:str_repeat('&nbsp;&nbsp;',$v['level']*3)}{$v.cate_name}</option>
+            {/foreach}
+        </select>
+    品牌 <select id="brand_name">
+            <option value="">--请选择--</option>
+            {foreach $brandInfo as $v}
+                <option value="{$v.brand_name}">{$v.brand_name}</option>
+            {/foreach}
+        </select>
+    <input type="button" value="搜索" id="btn">
+    <table id="demo" class="layui-hide" lay-filter="table_edit"></table>
+    <script type="text/html" id='barDemo'>
+        <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+    </script>
+    
+</div>
+    <script>
+        $(function(){
+            layui.use(['table','layer'],function(){
+                var table=layui.table
+                var layer=layui.layer
+                table.render({
+                    elem: '#demo'
+                    ,url: "{:url('goods/goodsinfo')}" //数据接口
+                    ,page: true //开启分页
+                    ,limit: 6
+                    ,limits:[1,2,3,4,5,6,7,8,9,10]
+                    ,cols: [[ //表头
+                    {field: 'goods_id', title: '商品ID',width:80, sort: true, fixed: 'left'}
+                    ,{field: 'goods_name', title: '商品名称',width:100,edit:'text'}
+                    ,{field: 'self_price', title: '本店价格',width:100,edit:'text'}
+                    ,{field: 'market_price', title: '市场价格',width:100,edit:'text'}
+                    ,{field: 'goods_sell', title: '是否展示',width:100}
+                    ,{field: 'goods_new', title: '新品',width:70}
+                    ,{field: 'goods_best', title: '精品',width:70}
+                    ,{field: 'goods_hot', title: '热卖',width:70}
+                    ,{field: 'goods_num', title: '库存',width:70,edit:'text'} 
+                    ,{field: 'goods_score', title: '赠送积分',width:100}
+                    ,{field: 'brand_name', title: '商品品牌',width:100}
+                    ,{field: 'cate_name', title: '商品分类',width:100}
+                    ,{field: 'create_time', title: '添加时间',width:200}
+                    ,{field:'right', title:'操作',toolbar:'#barDemo',width:120}
+                    ]]
+                });
+                // 多条件搜索
+                $("#btn").click(function(){
+                    var goods_name=$("#goods_name").val()
+                    var cate_name=$("#cate_name").val()
+                    var brand_name=$("#brand_name").val()
+                        table.reload('demo',{
+                            where:{goods_name:goods_name,cate_name:cate_name,brand_name:brand_name}
+                        })
+                })
+
+
+
+                // 即点即改{
+                table.on('edit(table_edit)',function(obj){
+                    var value=obj.value
+                        field=obj.field
+                        goods_id=obj.data.goods_id
+                    $.post(
+                        "{:url('goods/goodsfieldupdate')}",
+                        {value:value,field:field,goods_id:goods_id},
+                        function(res){
+                            layer.msg(res.font,{icon:res.code})
+                        }
+                        ,'json'
+                    )
+                        
+                })
+                // 监听工具 + 删除、编辑
+                table.on('tool(table_edit)',function(obj){
+                    var data=obj.data;
+                    if(obj.event=='del'){
+                        // 是否确认删除
+                        layer.confirm('是否确认删除?',{icon:3},function(index){
+                            $.post(
+                                "{:url('goods/goodsdel')}",
+                                {goods_id:data.goods_id},
+                                function(msg){
+                                    layer.msg(msg.font,{icon:msg.code});
+                                    if(msg.code==1){
+                                        table.reload('demo');
+                                    }
+                                }
+                                ,'json'
+                            )
+                        })
+                    }else if(obj.event=='edit'){
+                        location.href="{:url('goods/goodsupdate')}?goods_id="+data.goods_id;
+                    }
+                })
+            })
+                
+        })
+    </script>

@@ -1,0 +1,65 @@
+<div style="padding: 15px; width: 850px">
+        <table id="demo" class="layui-hide" lay-filter="table_edit"></table>
+        <script type="text/html" id='barDemo'>
+            <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+            <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+        </script>
+        
+    </div>
+    <script>
+        $(function(){
+            layui.use(['table','layer'],function(){
+                var table=layui.table
+                var layer=layui.layer
+                table.render({
+                    elem: '#demo'
+                    ,url: "{:url('links/linksinfo')}" //数据接口
+                    ,page: true //开启分页
+                    ,limit: 3
+                    ,limits:[1,3,5,7]
+                    ,cols: [[ //表头
+                    {field: 'id', title: 'ID', sort: true, fixed: 'left'}
+                    ,{field: 'name', title: '友链名称',edit:'text'}
+                    ,{field: 'url', title: '友链网址',edit:'text'}
+                    ,{field:'right', title:'操作',toolbar:'#barDemo',}
+                    ]]
+                });
+                // 即点即改{
+                table.on('edit(table_edit)',function(obj){
+                    var value=obj.value//得到修改的值
+                        ,id=obj.data.id//得到所在行的所有的键值
+                        ,field=obj.field//得到字段
+                    $.post(
+                        "{:url('links/linksfieldupdate')}"
+                        ,{value:value,id:id,field:field}
+                        ,function(res){
+                            layer.msg(res.font,{icon:res.code});
+                        },'json'
+                    );
+                })
+                // 监听工具 + 删除、编辑
+                table.on('tool(table_edit)',function(obj){
+                    var data=obj.data;
+                    if(obj.event=='del'){
+                        // 是否确认删除
+                        layer.confirm('是否确认删除?',{icon:3},function(index){
+                            $.post(
+                                "{:url('links/linksdel')}",
+                                {id:data.id},
+                                function(msg){
+                                    layer.msg(msg.font,{icon:msg.code});
+                                    if(msg.code==1){
+                                        table.reload('demo');
+                                    }
+                                }
+                                ,'json'
+                            )
+                        })
+                    }else if(obj.event=='edit'){
+                        location.href="{:url('links/linksupdate')}?id="+data.id;
+                    }
+                })
+            })
+                
+        })
+    </script>

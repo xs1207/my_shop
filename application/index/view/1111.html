@@ -1,0 +1,168 @@
+<!--Begin 退款中心 Begin -->
+{include file="public/user_top" /}
+<div class="m_content">
+    {include file="public/user_left" /}
+    <!--End Header End-->
+    <div class="m_right">
+        <table border="0" class="car_tab" style="width:975px; margin-bottom:50px;" cellspacing="0" cellpadding="0">
+            <tr>
+                <td class="car_th"></td>
+                <td class="car_th" width="490">商品名称</td>
+                <td class="car_th" width="150">购买数量</td>
+                <td class="car_th" width="130">小计</td>
+                <td class="car_th" width="140">单价</td>
+                <td class="car_th" width="150">操作</td>
+            </tr>
+            <tr class="car_tr" goods_id="" >
+                <td>
+                    <input type="checkbox" class="box" value="">
+                </td>
+                <td>
+                    <div class="c_s_img"><img src="__ROOT__/goodsimg/" width="73" height="73" /></div>
+
+                </td>
+                <td align="center" price_change="" goods_store="" class="price_count">
+                    <div class="c_num" class="change" >
+                        <input type="button" class="car_btn_1 reduce" goods_id=""/>
+                        <input type="text" value="" name="" class="car_ipt edit" goods_id=""/>
+                        <input type="button"  class="car_btn_2 add" goods_id="" />
+                    </div>
+                </td>
+                <td align="center" style="color:#ff4e00;" >￥<b style="color:red"></b></td>
+                <td align="center">￥<b style="color:red"></b></td>
+                <td align="center"><a href="javascript:;" class="del">退款</a></td>
+            </tr>
+            </tr>
+            <!--<tr valign="top" height="150">
+                <td colspan="6" align="right">
+                    <a href="{:url('category_list/catelist')}">退款</a>&nbsp; &nbsp; <a href="javascript:;" id="confirm"><img src="__STATIC__/index/images/buy2.gif" /></a>
+                </td>
+            </tr>-->
+        </table>
+    </div>
+</div>
+<!--End 退款中心 End-->
+<script>
+    $(function () {
+        layui.use('layer',function () {
+            layer=layui.layer;
+
+            $('#refusemoney').click(function () {
+                _this=$(this);
+                id=_this.parents('tr').attr('ref_id');
+                order_number={$order_number};
+                order_amount=_this.parents('tr').attr('order_amount');
+                $.post(
+                    "{:url('member_order/refusemoney')}",
+                    {id:id,order_number:order_number,order_amount:order_amount},
+                    function (result) {
+                        layer.msg(result.font,{icon:result.code});
+                        console.log(result);
+                        if(result.code==1){
+                            _this.parents('tr').remove();
+                        }
+                    },
+                    'json'
+                )
+            })
+        })
+    })
+</script>
+
+
+
+
+
+
+
+
+
+
+
+//退款页面
+public function refusedetail(){
+    //检测是否登陆
+    if(!$this->checkUserLogin()){
+        $this->error('您还没有登录，请先登录',url('Login/login'));exit;
+    }
+    $param=input('get.');
+    //print_r($param);exit;
+    $order_model=model('Order');
+    $where=[
+        'order_number'=>$param['order_number'],
+    ];
+    $orderInfoData=$order_model
+        ->alias('o')
+        ->field('goods_name,goods_selfprice,goods_num,goods_img')
+        ->join('shop_order_detail d','o.order_id=d.order_id')
+        ->where($where)
+        ->select();
+    //echo $order_model->getLastSql();exit;
+   //print_r(collection($orderInfoData)->toArray());exit;
+    $this->assign('orderInfoData',$orderInfoData);
+    return view();
+}
+//支付宝退款
+public function refusemoney(){
+    $param=input('get.');
+    $config=config('alipay_config');
+    require_once EXTEND_PATH.'pay/pagepay/service/AlipayTradeService.php';
+    require_once EXTEND_PATH.'pay/pagepay/buildermodel/AlipayTradeRefundContentBuilder.php';
+    //商户订单号，商户网站订单系统中唯一订单号
+    $out_trade_no = $param['order_number'];
+
+    //支付宝交易号
+    $trade_no = '';
+    //请二选一设置
+
+    //需要退款的金额，该金额不能大于订单金额，必填
+    $refund_amount = $param['order_amount'];
+
+    //退款的原因说明
+    $refund_reason = '拍错不想卖';
+
+    //标识一次退款请求，同一笔交易多次退款需要保证唯一，如需部分退款，则此参数必传
+    $out_request_no = '';
+
+    //构造参数
+    $RequestBuilder=new \AlipayTradeRefundContentBuilder();
+    $RequestBuilder->setOutTradeNo($out_trade_no);
+    $RequestBuilder->setTradeNo($trade_no);
+    $RequestBuilder->setRefundAmount($refund_amount);
+    $RequestBuilder->setOutRequestNo($out_request_no);
+    $RequestBuilder->setRefundReason($refund_reason);
+
+    $aop = new \AlipayTradeService($config);
+
+    /**
+     * alipay.trade.refund (统一收单交易退款接口)
+     * @param $builder 业务参数，使用buildmodel中的对象生成。
+     * @return $response 支付宝返回的信息
+     */
+    $response = $aop->Refund($RequestBuilder);
+    $res=$response->msg;
+    if($res=='Success'){
+        $order_model=model('Order');
+        $detail_model=model('OrderDetail');
+        $orderWhere=[
+            'order_number'=>$param['order_number']
+        ];
+        $detailWhere=[
+            'id'=>$param['id'],
+        ];
+        $orderData=[
+            'order_status'=>3,
+        ];
+        $detailData=[
+            'goods_status'=>2,
+        ];
+        $res1=$detail_model->where($detailWhere)->update($detailData);
+        $res2=$order_model->where($orderWhere)->update($orderData);
+        if($res1!==false && $res2!==false){
+            successly('退款成功');
+        }
+
+    }else{
+        fail('退款失败');
+    }
+}
